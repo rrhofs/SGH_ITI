@@ -1,1 +1,1 @@
-Para instalação deste Sistema é necessário Python 3.8 ou acima e os necessários em requeriments
+Para instalação deste Sistema é necessário Python 3.8 ou acima, banco de dados PostgreSQL e o pip3 install -r requeriments.txt para instalação dos módulos necessários.
