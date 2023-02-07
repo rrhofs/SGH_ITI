@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='post'>
+	{{ form.ativo(class_='form-check-input', onchange='form.submit()') }} {{ form.ativo.label(class_='form-check-label', for='ativo') }}
+</form>
+<div class="mt-3">
+	<a href="{{ url_for('clientes_bp.editar_clientes') }}"><img src="{{ url_for('static', filename='img/adicionar.png') }}" style="height:30px;"></a>
+	<h4 class="mt-3">Clientes</h4>
+	<form id="pesquisa" method="post">
+		<div class="row">
+			<div class="col-sm-10"></div>
+			<div class="col-sm-2">
+				{{ pesquisa_form.termo(class_="form-control form-control-sm", placeholder="Pesquisar por nome", onkeyup="pesquisar()") }}
+			</div>
+		</div>
+	</form>
+	<table class="table table-sm table-stripped">
+		<thead>
+			<th>CNPJ/CPF</th>
+			<th>Nome</th>
+			<th>CEP</th>
+			<th>Logradouro</th>
+			<th>Numero</th>
+			<th>Complemento</th>
+			<th>Telefone</th>
+			<th>E-mail</th>
+			<th>Ativo</th>
+			<th>Ações</th>
+		</thead>
+		<tbody id="tabela_clientes">
+			{% for cliente in clientes %}
+			<tr>
+				{% if cliente.cnpj_cpf|length == 11 %}
+				<td>{{ cliente.cnpj_cpf | regex_sub("(\d{3})(\d{3})(\d{3})(\d{2})","\g<1>.\g<2>.\g<3>-\g<4>")  }}</td>
+				{% else %}
+				<td>{{ cliente.cnpj_cpf | regex_sub("(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})","\g<1>.\g<2>.\g<3>/\g<4>-\g<5>")  }}</td>
+				{% endif %}
+				<td>{{ cliente.nome }}</td>
+				<td>{{ cliente.cep | regex_sub("(\d{5})(\d{3})", "\g<1>-\g<2>") }}</td>
+				<td>{{ cliente.logradouro }}</td>
+				<td>{{ cliente.numero }}</td>
+				<td>{{ cliente.complemento }}</td>
+				{% if cliente.telefone|length == 11 %}
+				<td>{{ cliente.telefone | regex_sub("(\d{2})(\d{5})(\d{4})","(\g<1>) \g<2>-\g<3>") }}</td>
+				{% else %}
+				<td>{{ cliente.telefone | regex_sub("(\d{2})(\d{4})(\d{4})","(\g<1>) \g<2>-\g<3>") }}</td>
+				{% endif %}
+				<td>{{ cliente.email }}</td>
+				<td>{% if cliente.ativo %}Sim{% else %}Não{% endif %}</td>
+				<td>
+					<a href="{{ url_for('clientes_bp.editar_clientes', id=cliente.cnpj_cpf) }}"><img src="{{ url_for('static', filename='img/editar.png') }}" style="height:15px;"></a>
+					<a href="{{ url_for('reservas_bp.adicionar_reservas', cliente_id=cliente.cnpj_cpf) }}"><img src="{{ url_for('static', filename='img/adicionar_pedido.png') }}" style="height:15px;"></a>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<script type="text/javascript">
+	window.pesquisar = function () {
+		termo = document.getElementById('termo').value;
+		ativo = document.getElementById('ativo').checked;
+
+		var xmlhttp = new XMLHttpRequest();
+
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+				if (xmlhttp.status == 200) {
+					clientes = JSON.parse(xmlhttp.responseText)
+					tabela = document.getElementById('tabela_clientes');
+					tabela.innerHTML = '';
+					clientes.forEach(cliente => {
+						tr = document.createElement("tr");
+						td_doc =			document.createElement("td");
+						td_nome =			document.createElement("td");
+						td_cep =			document.createElement("td");
+						td_logradouro =		document.createElement("td");
+						td_numero =			document.createElement("td");
+						td_complemento =	document.createElement("td");
+						td_telefone =		document.createElement("td");
+						td_email =			document.createElement("td");
+						td_ativo =			document.createElement("td");
+						td_acoes =			document.createElement("td");
+
+						td_doc.innerHTML =			cliente.cnpj_cpf;
+						td_nome.innerHTML =			cliente.nome;
+						td_cep.innerHTML =			cliente.cep
+						td_logradouro.innerHTML =	cliente.logradouro;
+						td_numero.innerHTML =		cliente.numero;
+						td_complemento.innerHTML =	cliente.complemento;
+						td_telefone.innerHTML =		cliente.telefone;
+						td_email.innerHTML =		cliente.email;
+						td_ativo.innerHTML =		cliente.ativo ? "Sim" : "Não";
+						td_acoes.innerHTML =		cliente.acoes;
+
+						tr.append(td_doc);
+						tr.append(td_nome);
+						tr.append(td_cep);
+						tr.append(td_logradouro);
+						tr.append(td_numero);
+						tr.append(td_complemento);
+						tr.append(td_telefone);
+						tr.append(td_email);
+						tr.append(td_ativo);
+						tr.append(td_acoes);
+
+						tabela.append(tr);
+					});
+				}
+				else if (xmlhttp.status == 400) {
+					alert('Erro 400');
+				}
+				else {
+					alert('Retornou algo diferentes de 200');
+				}
+			}
+		};
+		
+		if (termo == "") {
+			termo = "None"
+		}
+		xmlhttp.open("GET", "{{ url_for('clientes_bp.pesquisar_clientes') }}/" + termo + "/" + ativo, true);
+		xmlhttp.send();
+
+	}
+</script>
+{% endblock %}

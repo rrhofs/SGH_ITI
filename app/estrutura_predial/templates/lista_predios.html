@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='post'>
+	{{ form.ativo(class_='form-check-input', onchange='form.submit()') }}{{ form.ativo.label(class_='form-check-label', for='ativo') }}
+</form>
+<div class="mt-3">
+	<a href="{{ url_for('estrutura_bp.editar_predios') }}"><img src="{{ url_for('static', filename='img/adicionar.png') }}" style="height:30px;"></a>
+	<h4 class="mt-3">Prédios</h4>
+	<table class="table table-sm table-stripped">
+		<thead>
+			<th>Nome</th>
+			<th>Ativo</th>
+			<th>Ações</th>
+		</thead>
+		<tbody>
+			{% for predio in predios%}
+			<tr>
+				<td>{{ predio.nome }}</td>
+				<td>{% if predio.ativo %}Sim{% else %}Não{% endif %}</td>
+				<td><a href="{{ url_for('estrutura_bp.editar_predios', id=predio.id) }}"><img src="{{ url_for('static', filename='img/editar.png') }}" style="height:15px;"></a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

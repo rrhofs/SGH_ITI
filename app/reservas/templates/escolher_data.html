@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='post'>
+	{{ form.csrf_token }}
+	<center class='mt-3'>
+	{% if form.cliente.cnpj_cpf|length == 11 %}
+	<h4>Reserva de <b>{{ form.cliente.nome }}</b> - {{ form.cliente.cnpj_cpf | regex_sub("(\d{3})(\d{3})(\d{3})(\d{2})","\g<1>.\g<2>.\g<3>-\g<4>") }}</h4>
+	{% else %}
+	<h4>Reserva de <b>{{ form.cliente.nome }}</b> - {{ form.cliente.cnpj_cpf | regex_sub("(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})","\g<1>.\g<2>.\g<3>/\g<4>-\g<5>") }}</h4>
+	{% endif %}
+	</center>
+	<div class="mb-3">
+		{{ form.dt_inicial.label(class_="form-label", for="dt_inicial") }}
+		{{ form.dt_inicial(class_="form-control") }}
+	</div>
+	<div class="mb-3">
+		{{ form.dt_final.label(class_="form-label", for="dt_final") }}
+		{{ form.dt_final(class_="form-control") }}
+	</div>
+	{{ form.submit(class_="btn btn-primary") }}
+</form>
+{% endblock %}

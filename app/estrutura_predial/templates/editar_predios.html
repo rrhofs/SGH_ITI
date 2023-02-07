@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='POST'>
+	{{ form.csrf_token }}
+	<div class="mb-3">
+		{{ form.nome.label(class_="form-label", for="nome") }}
+		{{ form.nome(class_="form-control") }}
+	</div>
+	<div class="mb-3 form-check">
+		{{ form.ativo(class_="form-check-input") }}
+		{{ form.ativo.label(class_="form-label", for="ativo") }}
+	</div>
+	{{ form.submit(class_="btn btn-primary") }}
+</form>
+{% endblock %}

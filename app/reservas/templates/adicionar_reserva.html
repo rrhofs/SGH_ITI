@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='post'>
+	{{ form.csrf_token }}
+	<center class='mt-3'>
+	{% if form.cliente.cnpj_cpf|length == 11 %}
+	<h4>Reserva de <b>{{ form.cliente.nome }}</b> - {{ form.cliente.cnpj_cpf | regex_sub("(\d{3})(\d{3})(\d{3})(\d{2})","\g<1>.\g<2>.\g<3>-\g<4>") }}</h4>
+	{% elif form.cliente.cnpj_cpf == "-1" %}
+	<h4>Governança</h4>
+	{% else %}
+	<h4>Reserva de <b>{{ form.cliente.nome }}</b> - {{ form.cliente.cnpj_cpf | regex_sub("(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})","\g<1>.\g<2>.\g<3>/\g<4>-\g<5>") }}</h4>
+	{% endif %}
+	</center>
+	<div class="mb-3">
+		<div class="row">
+			<div class="col-sm-6">
+				{{ form.dt_inicial.label(class_="form-label", for="dt_inicial") }}
+				{{ form.dt_inicial(class_="form-control", onchange="escolher_datas();atualizar_infos()") }}
+			</div>
+			<div class="col-sm-6">
+				{{ form.dt_final.label(class_="form-label", for="dt_final") }}
+				{{ form.dt_final(class_="form-control", onchange="escolher_datas();atualizar_infos()") }}
+			</div>
+		</div>
+	</div>
+	<div class="mb-3">
+		<div class="row">
+			<div class="col-sm-6">
+				{{ form.quartos_compartilhados.label(class_="form-label", for="quartos") }}
+				{{ form.quartos_compartilhados(class_="form-select", onchange="escolher_datas();quartos_compartilhados_info();") }}
+			</div>
+			<div class="col-sm-6">
+				{{ form.quartos_privativos.label(class_="form-label", for="quartos") }}
+				{{ form.quartos_privativos(class_="form-select", onchange="escolher_datas();quartos_privativos_info();") }}
+			</div>
+		</div>
+	</div>
+	{% if form.cliente.cnpj_cpf != "-1" %}
+	<div class="mb-3">
+		<div class="row">
+			<div class="col-sm-6">
+				{{ form.nro_pessoas.label(class_="form-label", for="nro_pessoas") }}
+				{{ form.nro_pessoas(class_="form-select", onchange="escolher_datas();") }}
+			</div>
+		</div>
+	</div>
+	{% endif %}
+	<div class="row">
+		<div id="quartos_compartilhados_info" class="my-3 col-sm-6">
+		</div>
+		<div id="quartos_privativos_info" class="my-3 col-sm-6">
+		</div>
+	</div>
+
+	{% if form.cliente.cnpj_cpf != "-1" %}
+	<div class="mb-3">
+		<a id="btn_status" class="btn btn-secondary" style="height:40px; width:300px;">Status</a>
+	</div>
+	{% endif %}
+	{{ form.submit(class_="btn btn-primary") }}
+</form>
+
+<script>
+	window.onload = function () {
+		{% if form.cliente.cnpj_cpf != "-1" %}
+		document.getElementById('submit').disabled = true;
+		{% endif %}
+		{% if msg %}
+		alert('{{ msg }}');
+		{% endif %}
+		
+	}
+
+	window.quartos_compartilhados_info = function () {
+		quartos_compartilhados = 	document.getElementById('quartos_compartilhados');
+		div_info_compartilhados =	document.getElementById('quartos_compartilhados_info');
+		dt_inicial =				document.getElementById('dt_inicial');
+		dt_final =					document.getElementById('dt_final');
+
+		quartos_compartilhados_selecionados = [];
+		for (var opt of quartos_compartilhados.options) {
+			if (opt.selected)
+				quartos_compartilhados_selecionados.push(opt.value);
+		}
+		if (quartos_compartilhados_selecionados.length > 0 && dt_inicial.value && dt_final.value) {
+			var xmlhttp = new XMLHttpRequest();
+			
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+					if (xmlhttp.status == 200) {
+						resultado =	JSON.parse(xmlhttp.responseText);
+						if (resultado.sucesso) {
+							div_info_compartilhados.innerHTML =	"";
+
+							resultado.dados.forEach(quarto => {
+								card =			document.createElement("div");
+								card_body =		document.createElement("div");
+								card_title =	document.createElement("h5");
+								card_text =		document.createElement("p");
+								
+								card.classList.add("card");
+								card.classList.add("my-3");
+								card_body.classList.add("card-body");
+								card_title.classList.add("card-title");
+								card_text.classList.add("card-text");
+
+								card_title.innerHTML =	quarto.quarto
+								card_text.innerHTML =	"Lotacao: <b>" + quarto.lotacao + "</b>";
+								card_text.innerHTML +=	"<br>Qtde banheiros: <b>" + quarto.qt_banheiros + "</b>";
+								card_text.innerHTML +=	"<br>Possui cozinha: <b>" + quarto.cozinha + "</b>";
+								card_text.innerHTML +=	"<br>Valor diária: <b>" + quarto.diaria + "</b>";
+								card_text.innerHTML +=	"<br><b>Quarto " + quarto.compartilhado + "</b>";
+
+								card_body.append(card_title);
+								card_body.append(card_text);
+								card.append(card_body);
+								div_info_compartilhados.append(card);
+							});
+						} else {
+							alert(resultado);
+						}
+					} else if (xmlhttp.status == 400) {
+						alert('Erro 400');
+					}
+					else {
+						alert('Erro ' + xmlhttp.status.toString());
+					}
+				}
+			};
+			dados =		"dt_inicial="+dt_inicial.value;
+			dados +=	"&dt_final="+dt_final.value;
+			dados +=	"&quartos="+quartos_compartilhados_selecionados;
+			xmlhttp.open("POST", "{{ url_for('reservas_bp.quartos_info') }}");
+			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xmlhttp.send(dados);
+		} else {
+			div_info_compartilhados.innerHTML =	"";
+		}
+		return;
+	}
+
+	window.quartos_privativos_info = function () {
+		quartos = 	document.getElementById('quartos_privativos');
+		div_info =	document.getElementById('quartos_privativos_info');
+		dt_inicial =	document.getElementById('dt_inicial');
+		dt_final =		document.getElementById('dt_final');
+
+		quartos_selecionados = [];
+		for (var opt of quartos.options) {
+			if (opt.selected)
+				quartos_selecionados.push(opt.value);
+		}
+		if (quartos_selecionados.length > 0 && dt_inicial.value && dt_final.value) {
+			var xmlhttp = new XMLHttpRequest();
+			
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+					if (xmlhttp.status == 200) {
+						resultado =	JSON.parse(xmlhttp.responseText);
+						if (resultado.sucesso) {
+							div_info.innerHTML =	"";
+
+							resultado.dados.forEach(quarto => {
+								card =			document.createElement("div");
+								card_body =		document.createElement("div");
+								card_title =	document.createElement("h5");
+								card_text =		document.createElement("p");
+								
+								card.classList.add("card");
+								card.classList.add("my-3");
+								card_body.classList.add("card-body");
+								card_title.classList.add("card-title");
+								card_text.classList.add("card-text");
+
+								card_title.innerHTML =	quarto.quarto
+								card_text.innerHTML =	"Lotacao: <b>" + quarto.lotacao + "</b>";
+								card_text.innerHTML +=	"<br>Qtde banheiros: <b>" + quarto.qt_banheiros + "</b>";
+								card_text.innerHTML +=	"<br>Possui cozinha: <b>" + quarto.cozinha + "</b>";
+								card_text.innerHTML +=	"<br>Valor diária: <b>" + quarto.diaria + "</b>";
+								card_text.innerHTML +=	"<br><b>Quarto " + quarto.compartilhado + "</b>";
+
+								card_body.append(card_title);
+								card_body.append(card_text);
+								card.append(card_body);
+								div_info.append(card);
+							});
+						} else {
+							alert(resultado);
+						}
+					} else if (xmlhttp.status == 400) {
+						alert('Erro 400');
+					}
+					else {
+						alert('Erro ' + xmlhttp.status.toString());
+					}
+				}
+			};
+			dados =		"dt_inicial="+dt_inicial.value;
+			dados +=	"&dt_final="+dt_final.value;
+			dados +=	"&quartos="+quartos_selecionados;
+			xmlhttp.open("POST", "{{ url_for('reservas_bp.quartos_info') }}");
+			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xmlhttp.send(dados);
+		} else {
+			div_info.innerHTML =	"";
+		}
+		return;
+	}
+	
+	window.atualizar_infos = function () {
+		quartos_compartilhados_info();
+		quartos_privativos_info();
+
+	}
+
+	window.escolher_datas = function () {
+		dt_inicial =				document.getElementById('dt_inicial');
+		dt_final =					document.getElementById('dt_final');
+		quartos_compartilhados =	document.getElementById('quartos_compartilhados');
+		quartos_privativos =		document.getElementById('quartos_privativos');
+		nro_pessoas =				document.getElementById('nro_pessoas');
+		btn_status =				document.getElementById('btn_status');
+		
+		quartos_comp =			[];
+		quartos_priv =			[];
+		quartos_selecionados =	[];
+		for (var opt of quartos_compartilhados.options) {
+			if (opt.selected) {
+				quartos_comp.push(opt.value);
+				quartos_selecionados.push(opt.value);
+			}
+		}
+		for (var opt of quartos_privativos.options) {
+			if (opt.selected) {
+				quartos_priv.push(opt.value);
+				quartos_selecionados.push(opt.value);
+			}
+		}
+
+		if (dt_inicial.value && dt_final.value && (dt_inicial.value > dt_final.value)) {
+			btn_status.classList.remove("btn-success");
+			btn_status.classList.add("btn-danger");
+			btn_status.innerHTML = "Indisponível";
+			document.getElementById('submit').disabled = true;
+			alert('A data de entrada precisa ser menor que a data de saída.')
+			return;
+		}
+		if (!(((quartos_comp.length && nro_pessoas.value) || quartos_priv.length) && dt_inicial.value && dt_final.value)) {
+			btn_status.classList.remove("btn-success");
+			btn_status.classList.add("btn-danger");
+			btn_status.innerHTML = "Indisponível";
+			document.getElementById('submit').disabled = true;
+			return;
+		}
+
+		var xmlhttp = new XMLHttpRequest();
+		
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+				if (xmlhttp.status == 200) {
+					resultado =	JSON.parse(xmlhttp.responseText);
+					btn_status.classList.remove("btn-secondary");
+					if (resultado.sucesso) {
+						btn_status.classList.remove("btn-danger");
+						btn_status.classList.add("btn-success");
+						btn_status.innerHTML = "Liberado";
+						document.getElementById('submit').disabled = false;
+					} else {
+						btn_status.classList.remove("btn-success");
+						btn_status.classList.add("btn-danger");
+						btn_status.innerHTML = "Indisponível";
+						document.getElementById('submit').disabled = true;
+					}
+					if (resultado.msg)
+						alert(resultado.msg);
+				}
+				else if (xmlhttp.status == 400) {
+					alert('Erro 400');
+				}
+				else {
+					alert('Erro ' + xmlhttp.status.toString());
+				}
+			}
+		};
+		dados =		"dt_inicial="+dt_inicial.value;
+		dados +=	"&dt_final="+dt_final.value;
+		dados +=	"&quartos="+quartos_selecionados;
+		dados +=	"&nro_pessoas"+nro_pessoas.value;
+		xmlhttp.open("POST", "{{ url_for('reservas_bp.escolher_datas') }}");
+		xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xmlhttp.send(dados);
+	}
+</script>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='post'>
+	{{ form.ativo(class_='form-check-input', onchange='form.submit()') }}{{ form.ativo.label(class_='form-check-label', for='ativo') }}
+</form>
+<div class="mt-3">
+	<a href="{{ url_for('estrutura_bp.editar_quartos') }}"><img src="{{ url_for('static', filename='img/adicionar.png') }}" style="height:30px;"></a>
+	<h4 class="mt-3">Quartos</h4>
+	<table class="table table-sm table-stripped">
+		<thead>
+			<th>Numero</th>
+			<th>Predio</th>
+			<th>Banheiros</th>
+			<th>Lotação</th>
+			<th>Cozinha</th>
+			<th>Diária</th>
+			<th>Compartilhado</th>
+			<th>Ativo</th>
+			<th>Ações</th>
+		</thead>
+		<tbody>
+			{% for quarto in quartos %}
+			<tr>
+				<td>{{ quarto.numero }}</td>
+				<td>{{ quarto.predio_ref.nome }}</td>
+				<td>{{ quarto.qt_banheiros }}</td>
+				<td>{{ quarto.lotacao }}</td>
+				<td>{% if quarto.cozinha %}Sim{% else %}Não{% endif %}</td>
+				<td>{{ quarto.custo | format_float }}</td>
+				<td>{% if quarto.compartilhado %}Sim{% else %}Não{% endif %}</td>
+				<td>{% if quarto.ativo %}Sim{% else %}Não{% endif %}</td>
+				<td><a href="{{ url_for('estrutura_bp.editar_quartos', id=quarto.id) }}">
+						<img src="{{ url_for('static', filename='img/editar.png') }}" style="height:15px;">
+				</a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

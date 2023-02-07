@@ -1,0 +1,26 @@
+<html>
+<head>
+	<title>Prédios</title>
+</head>
+<body>
+	<form>
+		{{ form.csrf_token }}
+		<div class="mb-3">
+			<!-- <label for="exampleInputEmail1" class="form-label">Email address</label>
+			<input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+			<div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div> -->
+			{{ form.nome.label(class_="form-label", for="nome") }}
+			{{ form.nome(class_="form-control") }}
+		</div>
+		<div class="mb-3 form-check">
+			<!-- <input type="checkbox" class="form-check-input" id="exampleCheck1">
+			<label class="form-check-label" for="exampleCheck1">Check me out</label> -->
+			{{ form.ativo(class_="form-check-input") }}
+			{{ form.ativo.label(class_="form-label", for="ativo") }}
+		</div>
+		<!-- <button type="submit" class="btn btn-primary">Submit</button> -->
+		{{ form.submit(class_="btn btn-primary") }}
+	</form>
+</body>
+</html>
+

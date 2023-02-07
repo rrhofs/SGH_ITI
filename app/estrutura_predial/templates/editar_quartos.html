@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method='POST'>
+	{{ form.csrf_token }}
+	<div class="mb-3">
+		{{ form.numero.label(class_="form-label", for="numero") }}
+		{{ form.numero(class_="form-control") }}
+	</div>
+	<div class="mb-3">
+		{{ form.predio.label(class_="form-label", for="predio") }}
+		{{ form.predio(class_="form-select") }}
+	</div>
+	<div class="mb-3">
+		{{ form.qt_banheiros.label(class_="form-label", for="qt_banheiros") }}
+		{{ form.qt_banheiros(class_="form-control") }}
+	</div>
+	<div class="mb-3">
+		{{ form.lotacao.label(class_="form-label", for="lotacao") }}
+		{{ form.lotacao(class_="form-control") }}
+	</div>
+	<div class="mb-3">
+		{{ form.cozinha.label(class_="form-label", for="cozinha") }}
+		{{ form.cozinha(class_="form-control") }}
+	</div>
+	<div class="mb-3">
+		{{ form.custo.label(class_="form-label", for="custo") }}
+		{{ form.custo(class_="form-control") }}
+	</div>
+	<div class="mb-3">
+		{{ form.compartilhado.label(class_="form-label", for="compartilhado") }}
+		{{ form.compartilhado(class_="form-control") }}
+	</div>
+	<div class="mb-3 form-check">
+		{{ form.ativo(class_="form-check-input") }}
+		{{ form.ativo.label(class_="form-label", for="ativo") }}
+	</div>
+	{{ form.submit(class_="btn btn-primary") }}
+</form>
+{% endblock %}

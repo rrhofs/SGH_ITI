@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-3">
+	<h4>Governança</h4>
+	<table class="table table-sm table-stripped">
+		<thead>
+			<th>Quarto</th>
+			<th>Início</th>
+			<th>Fim</th>
+			<th>Ações</th>
+		</thead>
+		<tbody>
+			{% for g in governanca_lista %}
+			<tr>
+				<td>{{ g.quarto_ref.predio_ref.nome + ' - ' + g.quarto_ref.numero }}</td>
+				<td>{{ g.dt_inicial | format_datetime("%d/%m/%Y") }}</td>
+				<td>{{ g.dt_final | format_datetime("%d/%m/%Y") }}</td>
+				<td><a href="{{ url_for('governanca_bp.remover_governanca', governanca_id=g.id) }}"><img title="Remover" src="{{ url_for('static', filename='img/remover.png') }}" style="height:15px;"></a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+<div>
+{% endblock %}

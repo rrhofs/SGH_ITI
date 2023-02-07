@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-3">
+	<a href="{{ url_for('usuarios_bp.editar_usuarios') }}"><img src="{{ url_for('static', filename='img/adicionar.png') }}" style="height:30px;"></a>
+	<h4 class="mt-3">Usuários</h4>
+	<table class="table table-sm table-stripped">
+		<thead>
+			<th>Nome</th>
+			<th>Cargos</th>
+			<th>Ativo</th>
+			<th>Ações</th>
+		</thead>
+		<tbody>
+			{% for usuario in usuarios %}
+			<tr>
+				<td>{{ usuario.nome}}</td>
+				<td>{% for usuario_cargo in usuario.usuarios_cargos_ref %}{% if not usuario_cargo == usuario.usuarios_cargos_ref[-1] %}{{ usuario_cargo.cargos_ref.descricao }}, {% else %}{{ usuario_cargo.cargos_ref.descricao }}{% endif %}{% endfor %}</td>
+				<td>{% if usuario.ativo %}Sim{% else %}Não{% endif %}</td>
+				<td><a href="{{ url_for('usuarios_bp.editar_usuarios', id=usuario.id) }}"><img src="{{ url_for('static', filename='img/editar.png') }}" style="height:15px;"></a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

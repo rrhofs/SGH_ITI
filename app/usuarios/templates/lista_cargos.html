@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-3">
+	<a href="{{ url_for('cargos_bp.editar_cargos') }}"><img src="{{ url_for('static', filename='img/adicionar.png') }}" style="height:30px;"></a>
+	<h4 class="mt-3">Cargos</h4>
+	<table class="table table-sm table-stripped">
+		<thead>
+			<th>Descricao</th>
+			<th>Ativo</th>
+			<th>Ações</th>
+		</thead>
+		<tbody>
+			{% for cargo in cargos %}
+			<tr>
+				<td>{{ cargo.descricao }}</td>
+				<td>{% if cargo.ativo %}Sim{% else %}Não{% endif %}</td>
+				<td><a href="{{ url_for('cargos_bp.editar_cargos', id=cargo.id) }}"><img src="{{ url_for('static', filename='img/editar.png') }}" style="height:15px;"></a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}
